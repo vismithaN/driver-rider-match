@@ -6,10 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,36 +14,26 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TestUtils {
-    public static List<String> genStreamData(String channel) {
-        List<String> streamDataRawStrings = null;
+    public static List<JsonObject> genStreamData(String channel) {
+        String streamDataRawStrings = null;
         if (channel.equals("events")) {
-            streamDataRawStrings = readFile("events.txt");
+            streamDataRawStrings = "events";
         } else if (channel.equals("driver-locations")) {
-            streamDataRawStrings = readFile("driverLocations.txt");
+            streamDataRawStrings = "driverLocations";
         }
-
+        List<JsonObject> result = new ArrayList<>();
         // Convert raw strings to JSON strings
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<String> jsonStrings = streamDataRawStrings.stream()
-                .map(raw -> {
-                    try {
-                        // Convert the raw string to JSON object and back to a JSON string
-                        JsonParser parser = new JsonParser();
-                        JsonElement jsonElement = parser.parse(raw);
-                        JsonObject json = jsonElement.getAsJsonObject();
-                        return json.toString();
-                    } catch (Exception e) {
-                        // Handle any parsing exceptions
-                        System.err.println("Invalid JSON: " + raw);
-                        e.printStackTrace();
-                        return null; // Skip invalid JSON strings
-                    }
-                })
-                .filter(json -> json != null) // Filter out invalid JSON strings
-                .collect(Collectors.toList());
-
-        System.out.println("Stream JSON Strings: " + jsonStrings);
-        return jsonStrings;
+        try (BufferedReader br = new BufferedReader(new FileReader(streamDataRawStrings))) {
+            String log;
+            while ((log = br.readLine()) != null) {
+                JsonParser parser = new JsonParser();
+                JsonElement jsonElement = parser.parse(log);
+                JsonObject json = jsonElement.getAsJsonObject();
+                result.add(json);
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
 
 //        return streamDataRawStrings.stream().map(s -> {
 //            Map<String, Object> result;
