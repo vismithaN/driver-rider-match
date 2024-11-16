@@ -16,11 +16,11 @@ import org.apache.samza.task.StreamTaskFactory;
 public class DriverMatchTaskApplication implements TaskApplication {
     // Consider modify this zookeeper address, localhost may not be a good choice.
     // If this task application is executing in slave machine.
-    private static final List<String> KAFKA_CONSUMER_ZK_CONNECT = ImmutableList.of("localhost:2181");
+    private static final List<String> KAFKA_CONSUMER_ZK_CONNECT = ImmutableList.of("172-31-32-106:2181");
 
     // Consider modify the bootstrap servers address. This example only cover one
     // address.
-    private static final List<String> KAFKA_PRODUCER_BOOTSTRAP_SERVERS = ImmutableList.of("localhost:9092");
+    private static final List<String> KAFKA_PRODUCER_BOOTSTRAP_SERVERS = ImmutableList.of("172.31.32.66:9092,172.31.44.79:9092,172.31.32.106:9092");
     private static final Map<String, String> KAFKA_DEFAULT_STREAM_CONFIGS = ImmutableMap.of("replication.factor", "1");
 
     @Override
@@ -36,6 +36,18 @@ public class DriverMatchTaskApplication implements TaskApplication {
         // "match-stream".
 
         // Define your input and output descriptor in here.
+        KafkaInputDescriptor<String> driverInput =
+                kafkaSystemDescriptor.getInputDescriptor("driver-locations", new JsonSerde<>());
+        KafkaInputDescriptor<String> eventsInput =
+                kafkaSystemDescriptor.getInputDescriptor("events", new JsonSerde<>());
+        KafkaOutputDescriptor<String> matchOutput =
+                kafkaSystemDescriptor.getOutputDescriptor("match-stream", new JsonSerde<>());
+
+        taskApplicationDescriptor.withDefaultSystem(kafkaSystemDescriptor);
+        taskApplicationDescriptor.withInputStream(driverInput);
+        taskApplicationDescriptor.withInputStream(eventsInput);
+        taskApplicationDescriptor.withOutputStream(matchOutput);
+
         // Reference solution:
         // https://github.com/apache/samza-hello-samza/blob/master/src/main/java/samza/examples/wikipedia/task/application/WikipediaStatsTaskApplication.java
 
