@@ -108,20 +108,34 @@ public class DriverMatchTask implements StreamTask, InitableTask {
     private void handleRideComplete(Map<String,Object> message) {
         String driverId = String.valueOf(message.get("driverId"));
         Map<String, Object> driver = driverLocStore.get(driverId);
-        if (driver != null) {
-            // Update rating and mark driver as AVAILABLE
+
+        // Update rating and mark driver as AVAILABLE
+        if(driver!= null) {
             double oldRating = Double.parseDouble(message.get("rating").toString());
             double userRating = Double.parseDouble(message.get("user_rating").toString());
             driver.put("rating", (oldRating + userRating) / 2);
             driver.put("status", "AVAILABLE");
+            driver.put("gender", message.get("gender").toString());
+            driver.put("salary", Integer.parseInt(message.get("salary").toString()));
 
             // Update location if provided
             driver.put("blockId", Integer.parseInt(message.get("blockId").toString()));
             driver.put("latitude", Double.parseDouble(message.get("latitude").toString()));
             driver.put("longitude", Double.parseDouble(message.get("longitude").toString()));
-
             driverLocStore.put(driverId, driver);
+        } else {
+            Map<String, Object> driverNew = new HashMap<>();
+            driverNew.put("driverId", driverId);
+            driverNew.put("blockId", Integer.parseInt(message.get("blockId").toString()));
+            driverNew.put("latitude", Double.parseDouble(message.get("latitude").toString()));
+            driverNew.put("longitude", Double.parseDouble(message.get("longitude").toString()));
+            driverNew.put("rating", Double.parseDouble(message.get("rating").toString()));
+            driverNew.put("status", "AVAILABLE");
+            driverNew.put("gender", message.get("gender").toString());
+            driverNew.put("salary", Integer.parseInt(message.get("salary").toString()));
+            driverLocStore.put(driverId, driverNew);
         }
+
     }
 
     private void handleLeavingBlock(Map<String,Object> message) {
