@@ -80,7 +80,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         while (iterator.hasNext()) {
             Map<String, Object> driver = iterator.next().getValue();
             if (Integer.parseInt(driver.get("blockId").toString()) == clientBlockId &&
-                    "AVAILABLE".equals(driver.get("status").toString())) {
+                    "AVAILABLE".equals(driver.get("status"))) {
                 double matchScore = calculateMatchScore(driver, clientLatitude, clientLongitude, clientGenderPreference);
 
                 if (matchScore > highestMatchScore) {
