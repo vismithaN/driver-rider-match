@@ -95,7 +95,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
 
         if (bestMatchDriver != null) {
             // Output match to match-stream
-            int driverId = Integer.parseInt(bestMatchDriver.get("driverId"));
+            int driverId = Integer.parseInt(bestMatchDriver.get("driverId").toString());
             JsonObject output = new JsonObject();
             output.addProperty("clientId", clientId);
             output.addProperty("driverId", driverId);
