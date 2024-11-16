@@ -36,21 +36,21 @@ public class DriverMatchTask implements StreamTask, InitableTask {
 
         if (incomingStream.equals(DriverMatchConfig.DRIVER_LOC_STREAM.getStream())) {
             // Handle Driver Location messages
-            handleDriverLocation(message);
+            handleDriverLocation(message); //no
         } else if (incomingStream.equals(DriverMatchConfig.EVENT_STREAM.getStream())) {
             // Handle Event messages
             String eventType = message.get("type").toString();
             switch (eventType) {
-                case "RIDE_REQUEST":
+                case "RIDE_REQUEST": //no
                     handleRideRequest(message, collector);
                     break;
-                case "RIDE_COMPLETE":
+                case "RIDE_COMPLETE": //yes
                     handleRideComplete(message);
                     break;
-                case "LEAVING_BLOCK":
+                case "LEAVING_BLOCK": //no
                     handleLeavingBlock(message);
                     break;
-                case "ENTERING_BLOCK":
+                case "ENTERING_BLOCK": //yes
                     handleEnteringBlock(message);
                     break;
                 default:
@@ -145,8 +145,9 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         double driverLatitude = (double) driver.get("latitude");
         double driverLongitude = (double) driver.get("longitude");
         String driverGender = (String) driver.get("gender");
-        double driverRating = (double) driver.get("rating");
-        int driverSalary =  (int) driver.get("salary");
+        double driverRating = (double) (driver.get("rating") == null ? 0.0 : driver.get("rating"));
+        int driverSalary =  (int) (driver.get("salary") == null ? 0 : driver.get("salary"));
+
 
         // Calculate distance score
         double distance = Math.sqrt(Math.pow(clientLatitude - driverLatitude, 2) +
