@@ -95,7 +95,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
 
         if (bestMatchDriver != null) {
             // Output match to match-stream
-            int driverId = (int) bestMatchDriver.get("driverId");
+            int driverId = Integer.parseInt(bestMatchDriver.get("driverId").toString());
             JsonObject output = new JsonObject();
             output.addProperty("clientId", clientId);
             output.addProperty("driverId", driverId);
@@ -127,7 +127,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
     }
 
     private void handleLeavingBlock(JsonObject message) {
-        String driverId = String.valueOf(message.get("driverId").getAsInt());
+        String driverId = String.valueOf(message.get("driverId"));
         Map<String, Object> driver = driverLocStore.get(driverId);
         if (driver != null) {
             driver.put("status", "UNAVAILABLE");
@@ -136,7 +136,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
     }
 
     private void handleEnteringBlock(JsonObject message) {
-        String driverId = String.valueOf(message.get("driverId").getAsInt());
+        String driverId = String.valueOf(message.get("driverId"));
         Gson gson = new Gson();
         Map<String, Object> driverInfo = gson.fromJson(message,Map.class);
         driverInfo.put("status", "AVAILABLE");
