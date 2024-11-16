@@ -1,15 +1,10 @@
 package com.cloudcomputing.samza.nycabs;
 
-import java.lang.reflect.Type;
 import java.time.Duration;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.HashMap;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import org.apache.samza.serializers.NoOpSerde;
 import org.apache.samza.test.framework.TestRunner;
 import org.apache.samza.test.framework.system.descriptors.InMemoryInputDescriptor;
@@ -37,8 +32,6 @@ public class TestDriverMatchTask {
 
         InMemoryOutputDescriptor outputMatchStream = isd.getOutputDescriptor("match-stream", new NoOpSerde<>());
 
-        System.out.println("Events Stream" + TestUtils.genStreamData("events"));
-
         TestRunner
                 .of(new DriverMatchTaskApplication())
                 .addInputStream(imevents, TestUtils.genStreamData("events"))
@@ -51,31 +44,27 @@ public class TestDriverMatchTask {
         Assert.assertEquals(5, TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).size());
 
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
-        ObjectMapper objectMapper = new ObjectMapper();
+        System.out.println("Print this" + resultIter.next());
+        Map<String, Object> genderTest = (Map<String, Object>) resultIter.next();
 
-        Object next = resultIter.next();
-        Gson gson = new Gson();
-        Type type = new TypeToken<Map<String, Object>>() {}.getType();
-        Map<String, Object> genderTest =  gson.fromJson(next.toString(), type);;
 
-        System.out.println("Test" + genderTest.toString());
         Assert.assertTrue(genderTest.get("clientId").toString().equals("3")
                 && genderTest.get("driverId").toString().equals("9001"));
 
-        Map<String, Object> salaryTest = objectMapper.readValue(resultIter.next().toString(), Map.class);
+        Map<String, Object> salaryTest = (Map<String, Object>) resultIter.next();
         Assert.assertTrue(salaryTest.get("clientId").toString().equals("4")
                 && salaryTest.get("driverId").toString().equals("8000"));
 
-        Map<String, Object> ratingTest = objectMapper.readValue(resultIter.next().toString(), Map.class);
+        Map<String, Object> ratingTest = (Map<String, Object>) resultIter.next();
         Assert.assertTrue(ratingTest.get("clientId").toString().equals("5")
                 && ratingTest.get("driverId").toString().equals("8000"));
-        Map<String, Object> distanceTest = objectMapper.readValue(resultIter.next().toString(), Map.class);
+        Map<String, Object> distanceTest = (Map<String, Object>) resultIter.next();
         Assert.assertTrue(distanceTest.get("clientId").toString().equals("6")
                 && distanceTest.get("driverId").toString().equals("7001"));
-        Map<String, Object> rightBlockTest = objectMapper.readValue(resultIter.next().toString(), Map.class);
+        Map<String, Object> rightBlockTest = (Map<String, Object>) resultIter.next();
         System.out.println(rightBlockTest.get("clientId").toString());
         System.out.println(rightBlockTest.get("driverId").toString());
         Assert.assertTrue(rightBlockTest.get("clientId").toString().equals("7")
-                        && rightBlockTest.get("driverId").toString().equals("3002"));
+                && rightBlockTest.get("driverId").toString().equals("3002"));
     }
 }
