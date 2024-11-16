@@ -53,7 +53,7 @@ public class TestDriverMatchTask {
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = (String) resultIter.next();
-        Map<String, Object> genderTest = mapper.readValue(jsonString, new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> genderTest = objectMapper.readValue(jsonString, new TypeReference<Map<String, Object>>() {});
 
         System.out.println("Test" + genderTest.toString());
         Assert.assertTrue(genderTest.get("clientId").toString().equals("3")
