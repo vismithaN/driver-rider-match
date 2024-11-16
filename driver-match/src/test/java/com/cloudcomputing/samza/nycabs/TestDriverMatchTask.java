@@ -1,5 +1,6 @@
 package com.cloudcomputing.samza.nycabs;
 
+import java.lang.reflect.Type;
 import java.time.Duration;
 import java.util.ListIterator;
 import java.util.Map;
@@ -7,6 +8,8 @@ import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import org.apache.samza.serializers.NoOpSerde;
 import org.apache.samza.test.framework.TestRunner;
 import org.apache.samza.test.framework.system.descriptors.InMemoryInputDescriptor;
@@ -49,9 +52,11 @@ public class TestDriverMatchTask {
 
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
         ObjectMapper objectMapper = new ObjectMapper();
-        System.out.println("what is this" + resultIter.next());
 
-        Map<String, Object> genderTest = (Map<String, Object>) resultIter.next();
+        Object next = resultIter.next();
+        Gson gson = new Gson();
+        Type type = new TypeToken<Map<String, Object>>() {}.getType();
+        Map<String, Object> genderTest =  gson.fromJson(next.toString(), type);;
 
         System.out.println("Test" + genderTest.toString());
         Assert.assertTrue(genderTest.get("clientId").toString().equals("3")
