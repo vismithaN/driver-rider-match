@@ -22,6 +22,8 @@ public class TestUtils {
             streamDataRawStrings = readFile("driverLocations.txt");
         }
 
+        System.out.println("STream Raw String" + streamDataRawStrings);
+
         return streamDataRawStrings.stream().map(s -> {
             Map<String, Object> result;
             ObjectMapper mapper = new ObjectMapper();
