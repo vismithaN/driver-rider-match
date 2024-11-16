@@ -1,6 +1,9 @@
 package com.cloudcomputing.samza.nycabs;
 
 import com.google.common.io.Resources;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.BufferedReader;
@@ -28,8 +31,10 @@ public class TestUtils {
                 .map(raw -> {
                     try {
                         // Convert the raw string to JSON object and back to a JSON string
-                        Object jsonObject = objectMapper.readValue(raw, Object.class);
-                        return objectMapper.writeValueAsString(jsonObject);
+                        JsonParser parser = new JsonParser();
+                        JsonElement jsonElement = parser.parse(raw);
+                        JsonObject json = jsonElement.getAsJsonObject();
+                        return json.toString();
                     } catch (Exception e) {
                         // Handle any parsing exceptions
                         System.err.println("Invalid JSON: " + raw);
