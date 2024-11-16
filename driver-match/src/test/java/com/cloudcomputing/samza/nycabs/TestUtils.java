@@ -17,9 +17,9 @@ public class TestUtils {
     public static List<JsonObject> genStreamData(String channel) {
         String streamDataRawStrings = null;
         if (channel.equals("events")) {
-            streamDataRawStrings = "events.txt";
+            streamDataRawStrings = "driver-match/src/test/resources/events.txt";
         } else if (channel.equals("driver-locations")) {
-            streamDataRawStrings = "driverLocations.txt";
+            streamDataRawStrings = "driver-match/src/test/resources/driverLocations.txt";
         }
         List<JsonObject> result = new ArrayList<>();
         // Convert raw strings to JSON strings
