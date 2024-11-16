@@ -67,19 +67,20 @@ public class DriverMatchTask implements StreamTask, InitableTask {
 
     private void handleRideRequest(Map<String,Object> message, MessageCollector collector) throws Exception {
         int clientId = Integer.parseInt(message.get("clientId").toString());
-        int blockId = Integer.parseInt(message.get("blockId").toString());
+        int clientBlockId = Integer.parseInt(message.get("blockId").toString());
         String clientGenderPreference = message.get("gender_preference") == null
                 ? "N" : message.get("gender_preference").toString();
         double clientLatitude = Double.parseDouble(message.get("latitude").toString());
         double clientLongitude = Double.parseDouble(message.get("longitude").toString());
 
         Map<String, Object> bestMatchDriver = null;
-        double highestMatchScore = -1;
+        double highestMatchScore = Double.MIN_VALUE;
         KeyValueIterator<String,Map<String,Object>> iterator = driverLocStore.all();
 
         while (iterator.hasNext()) {
             Map<String, Object> driver = iterator.next().getValue();
-            if (driver.get("blockId").equals(blockId) && "AVAILABLE".equals(driver.get("status"))) {
+            if (Integer.parseInt(driver.get("blockId").toString()) == clientBlockId &&
+                    "AVAILABLE".equals(driver.get("status").toString())) {
                 double matchScore = calculateMatchScore(driver, clientLatitude, clientLongitude, clientGenderPreference);
 
                 if (matchScore > highestMatchScore) {
@@ -100,8 +101,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
             collector.send(new OutgoingMessageEnvelope(DriverMatchConfig.MATCH_STREAM, mapper.readTree(mapper.writeValueAsString(output))));
 
             // Update driver status in the KV store
-            bestMatchDriver.put("status", "UNAVAILABLE");
-            driverLocStore.put(String.valueOf(driverId), bestMatchDriver);
+            driverLocStore.delete(String.valueOf(driverId));
         }
     }
 
