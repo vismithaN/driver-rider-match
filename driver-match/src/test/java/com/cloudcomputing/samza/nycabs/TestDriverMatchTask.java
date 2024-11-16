@@ -5,7 +5,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.HashMap;
 
-import com.google.gson.JsonObject;
 import org.apache.samza.serializers.NoOpSerde;
 import org.apache.samza.test.framework.TestRunner;
 import org.apache.samza.test.framework.system.descriptors.InMemoryInputDescriptor;
@@ -49,9 +48,8 @@ public class TestDriverMatchTask {
         Assert.assertEquals(5, TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).size());
 
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
-//        System.out.println("What is this" + resultIter.next().toString() + resultIter.next().getClass());
         String genderTest = "{\"clientId\":3,\"driverId\":9001}";
-        Assert.assertEquals(resultIter.next(), genderTest);
+        Assert.assertEquals(resultIter.next(), mapper.readTree(genderTest));
 
         String salaryTest = "{\"clientId\":4,\"driverId\":8000}";
         Assert.assertEquals(resultIter.next(), salaryTest);
@@ -61,7 +59,7 @@ public class TestDriverMatchTask {
 
         String distanceTest = "{\"clientId\":6,\"driverId\":7001}";
         Assert.assertEquals(resultIter.next(), distanceTest);
-        
+
         String rightBlockTest = "{\"clientId\":7,\"driverId\":3002}";
         Assert.assertEquals(resultIter.next(), rightBlockTest);
     }

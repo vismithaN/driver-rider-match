@@ -20,7 +20,8 @@ public class DriverMatchTaskApplication implements TaskApplication {
 
     // Consider modify the bootstrap servers address. This example only cover one
     // address.
-    private static final List<String> KAFKA_PRODUCER_BOOTSTRAP_SERVERS = ImmutableList.of("172.31.32.66:9092,172.31.44.79:9092,172.31.32.106:9092");
+    private static final List<String> KAFKA_PRODUCER_BOOTSTRAP_SERVERS =
+            ImmutableList.of("172.31.32.66:9092,172.31.44.79:9092,172.31.32.106:9092");
     private static final Map<String, String> KAFKA_DEFAULT_STREAM_CONFIGS = ImmutableMap.of("replication.factor", "1");
 
     @Override

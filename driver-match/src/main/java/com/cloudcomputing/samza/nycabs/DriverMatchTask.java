@@ -11,8 +11,6 @@ import org.apache.samza.task.StreamTask;
 import org.apache.samza.task.TaskCoordinator;
 import org.codehaus.jackson.map.ObjectMapper;
 
-
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +19,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
     private KeyValueStore<String, Map<String, Object>> driverLocStore;
     private final double MAX_MONEY = 100.0;
     private final double MAX_RATING = 5.0;
-    private final static ObjectMapper mapper = new ObjectMapper();
+    private final  ObjectMapper mapper = new ObjectMapper();
 
     @Override
     @SuppressWarnings("unchecked")
@@ -71,7 +69,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         int clientId = Integer.parseInt(message.get("clientId").toString());
         int blockId = Integer.parseInt(message.get("blockId").toString());
         String clientGenderPreference = message.get("gender_preference") == null
-                ? "N": message.get("gender_preference").toString();
+                ? "N" : message.get("gender_preference").toString();
         double clientLatitude = Double.parseDouble(message.get("latitude").toString());
         double clientLongitude = Double.parseDouble(message.get("longitude").toString());
 
@@ -79,7 +77,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         double highestMatchScore = -1;
         KeyValueIterator<String,Map<String,Object>> iterator = driverLocStore.all();
 
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             Map<String, Object> driver = iterator.next().getValue();
             if (driver.get("blockId").equals(blockId) && "AVAILABLE".equals(driver.get("status"))) {
                 double matchScore = calculateMatchScore(driver, clientLatitude, clientLongitude, clientGenderPreference);
@@ -98,7 +96,8 @@ public class DriverMatchTask implements StreamTask, InitableTask {
             output.put("clientId", clientId);
             output.put("driverId", driverId);
 
-            collector.send(new OutgoingMessageEnvelope(DriverMatchConfig.MATCH_STREAM, mapper.writeValueAsString(output)));
+            mapper.readTree(mapper.writeValueAsString(output));
+            collector.send(new OutgoingMessageEnvelope(DriverMatchConfig.MATCH_STREAM, mapper.readTree(mapper.writeValueAsString(output))));
 
             // Update driver status in the KV store
             bestMatchDriver.put("status", "UNAVAILABLE");
@@ -141,7 +140,8 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         driverLocStore.put(driverId, driverInfo);
     }
 
-    private double calculateMatchScore(Map<String, Object> driver, double clientLatitude, double clientLongitude, String clientGenderPreference) {
+    private double calculateMatchScore(Map<String, Object> driver, double clientLatitude,
+                                       double clientLongitude, String clientGenderPreference) {
         double driverLatitude = (double) driver.get("latitude");
         double driverLongitude = (double) driver.get("longitude");
         String driverGender = (String) driver.get("gender");
@@ -149,7 +149,8 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         int driverSalary =  (int) driver.get("salary");
 
         // Calculate distance score
-        double distance = Math.sqrt(Math.pow(clientLatitude - driverLatitude, 2) + Math.pow(clientLongitude - driverLongitude, 2));
+        double distance = Math.sqrt(Math.pow(clientLatitude - driverLatitude, 2) +
+                Math.pow(clientLongitude - driverLongitude, 2));
         double distanceScore = Math.exp(-distance);
 
         // Calculate gender score
