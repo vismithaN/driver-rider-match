@@ -34,6 +34,8 @@ public class TestDriverMatchTask {
 
         InMemoryOutputDescriptor outputMatchStream = isd.getOutputDescriptor("match-stream", new NoOpSerde<>());
 
+        System.out.println("Events Stream" + TestUtils.genStreamData("events"));
+
         TestRunner
                 .of(new DriverMatchTaskApplication())
                 .addInputStream(imevents, TestUtils.genStreamData("events"))
@@ -45,7 +47,7 @@ public class TestDriverMatchTask {
 
         Assert.assertEquals(5, TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).size());
 
-        ListIterator resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
+        ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
         ObjectMapper objectMapper = new ObjectMapper();
 
         Map<String, Object> genderTest = (Map<String, Object>) resultIter.next();
