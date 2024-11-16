@@ -150,7 +150,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         double driverLongitude = (double) driver.get("longitude");
         String driverGender = (String) driver.get("gender");
         double driverRating = (double) driver.get("rating");
-        double driverSalary = (double) driver.get("salary");
+        int driverSalary =  (int) driver.get("salary");
 
         // Calculate distance score
         double distance = Math.sqrt(Math.pow(clientLatitude - driverLatitude, 2) + Math.pow(clientLongitude - driverLongitude, 2));
