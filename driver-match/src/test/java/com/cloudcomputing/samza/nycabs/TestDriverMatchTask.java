@@ -45,11 +45,10 @@ public class TestDriverMatchTask {
 
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
         System.out.println("Print this" + resultIter.next());
-        Map<String, Object> genderTest = (Map<String, Object>) resultIter.next();
+       
+        String result1 =  "{clientId=3, driverId=9001}";
+        Assert.assertEquals(resultIter.next(), result1);
 
-
-        Assert.assertTrue(genderTest.get("clientId").toString().equals("3")
-                && genderTest.get("driverId").toString().equals("9001"));
 
         Map<String, Object> salaryTest = (Map<String, Object>) resultIter.next();
         Assert.assertTrue(salaryTest.get("clientId").toString().equals("4")
