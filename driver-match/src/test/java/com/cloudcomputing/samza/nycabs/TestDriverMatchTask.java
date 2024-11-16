@@ -11,13 +11,17 @@ import org.apache.samza.test.framework.TestRunner;
 import org.apache.samza.test.framework.system.descriptors.InMemoryInputDescriptor;
 import org.apache.samza.test.framework.system.descriptors.InMemoryOutputDescriptor;
 import org.apache.samza.test.framework.system.descriptors.InMemorySystemDescriptor;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
 import com.cloudcomputing.samza.nycabs.application.DriverMatchTaskApplication;
 
+
+
 public class TestDriverMatchTask {
     @Test
     public void testDriverMatchTask() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
         Map<String, String> confMap = new HashMap<>();
         confMap.put("stores.driver-loc.factory", "org.apache.samza.storage.kv.RocksDbKeyValueStorageEngineFactory");
         confMap.put("stores.driver-loc.key.serde", "string");
@@ -45,10 +49,15 @@ public class TestDriverMatchTask {
         Assert.assertEquals(5, TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).size());
 
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
-        JsonObject jsonObject = (JsonObject) resultIter.next();
-//        String genderTest =  "{\"clientId\":3, \"driverId\":9001}";
-        Assert.assertEquals(3, jsonObject.get("clientId").getAsInt());
-        Assert.assertEquals(9001, jsonObject.get("driverId").getAsInt());
+
+        Map<String, Object> genderTest = (Map<String, Object>) resultIter.next();
+        Assert.assertTrue(genderTest.get("clientId").toString().equals("3")
+                && genderTest.get("driverId").toString().equals("9001"));
+
+//        Object jsonObject = resultIter.next();
+////        String genderTest =  "{\"clientId\":3, \"driverId\":9001}";
+//        Assert.assertEquals(3, jsonObject.);
+//        Assert.assertEquals(9001, jsonObject.get("driverId").getAsInt());
 
         String salaryTest =  "{clientId=4, driverId=8000}";
         Assert.assertEquals(resultIter.next(), salaryTest);
