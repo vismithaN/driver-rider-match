@@ -49,15 +49,9 @@ public class TestDriverMatchTask {
         Assert.assertEquals(5, TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).size());
 
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
-
-        Map<String, Object> genderTest = (Map<String, Object>) resultIter.next();
-        Assert.assertTrue(genderTest.get("clientId").toString().equals("3")
-                && genderTest.get("driverId").toString().equals("9001"));
-
-//        Object jsonObject = resultIter.next();
-////        String genderTest =  "{\"clientId\":3, \"driverId\":9001}";
-//        Assert.assertEquals(3, jsonObject.);
-//        Assert.assertEquals(9001, jsonObject.get("driverId").getAsInt());
+        System.out.println("What is this" + resultIter.next().toString() + resultIter.next().getClass());
+        String genderTest = "{\"clientId\":3, \"driverId\":9001}";
+        Assert.assertEquals(resultIter.next(), genderTest);
 
         String salaryTest =  "{clientId=4, driverId=8000}";
         Assert.assertEquals(resultIter.next(), salaryTest);
