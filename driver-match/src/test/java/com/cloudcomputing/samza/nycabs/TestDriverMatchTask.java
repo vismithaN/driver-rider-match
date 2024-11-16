@@ -5,6 +5,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.google.gson.Gson;
 import org.apache.samza.serializers.NoOpSerde;
 import org.apache.samza.test.framework.TestRunner;
 import org.apache.samza.test.framework.system.descriptors.InMemoryInputDescriptor;
@@ -44,8 +45,10 @@ public class TestDriverMatchTask {
         Assert.assertEquals(5, TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).size());
 
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
+
         System.out.println(resultIter.next().toString());
-        Map<String, Object> genderTest = (Map<String, Object>) resultIter.next();
+        Gson gson = new Gson();
+        Map<String, Object> genderTest = gson.fromJson(resultIter.next().toString(), Map.class);
 
         Assert.assertTrue(genderTest.get("clientId").toString().equals("3")
                 && genderTest.get("driverId").toString().equals("9001"));
