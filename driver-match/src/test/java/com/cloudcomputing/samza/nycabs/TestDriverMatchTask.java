@@ -45,8 +45,8 @@ public class TestDriverMatchTask {
 
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
 
-        String genderTest =  "{clientId=3, driverId=9001}";
-        Assert.assertEquals(resultIter.next(), genderTest);
+        String genderTest =  "{\"clientId\"=3, \"driverId\"=9001}";
+        Assert.assertEquals(genderTest, resultIter.next());
 
         String salaryTest =  "{clientId=4, driverId=8000}";
         Assert.assertEquals(resultIter.next(), salaryTest);
