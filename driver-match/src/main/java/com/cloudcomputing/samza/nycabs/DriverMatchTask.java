@@ -110,7 +110,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         Map<String, Object> driver = driverLocStore.get(driverId);
 
         // Update rating and mark driver as AVAILABLE
-        if(driver!= null) {
+        if (driver != null) {
             double oldRating = Double.parseDouble(message.get("rating").toString());
             double userRating = Double.parseDouble(message.get("user_rating").toString());
             driver.put("rating", (oldRating + userRating) / 2);
@@ -140,11 +140,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
 
     private void handleLeavingBlock(Map<String,Object> message) {
         String driverId = String.valueOf(message.get("driverId"));
-        Map<String, Object> driver = driverLocStore.get(driverId);
-        if (driver != null) {
-            driver.put("status", "UNAVAILABLE");
-            driverLocStore.put(driverId, driver);
-        }
+        driverLocStore.delete(driverId);
     }
 
     private void handleEnteringBlock(Map<String,Object> message) {
