@@ -2,6 +2,7 @@ package com.cloudcomputing.samza.nycabs;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import org.apache.samza.context.Context;
 import org.apache.samza.storage.kv.KeyValueIterator;
 import org.apache.samza.storage.kv.KeyValueStore;
@@ -13,6 +14,8 @@ import org.apache.samza.task.StreamTask;
 import org.apache.samza.task.TaskCoordinator;
 
 
+import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.Map;
 
 public class DriverMatchTask implements StreamTask, InitableTask {
@@ -20,6 +23,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
     private KeyValueStore<String, Map<String, Object>> driverLocStore;
     private final static double MAX_MONEY = 100.0;
     private final static double MAX_RATING = 5.0;
+    Gson gson = new Gson();
 
     @Override
     @SuppressWarnings("unchecked")
@@ -63,8 +67,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
     private void handleDriverLocation(JsonObject message) {
         // Store driver location and update availability
         String driverId = String.valueOf(message.get("driverId").getAsInt());
-        Gson gson = new Gson();
-        Map<String,Object> value = gson.fromJson(message, Map.class);
+        Map<String,Object> value = typeHandler(message);
         driverLocStore.put(driverId, value);
     }
 
@@ -137,8 +140,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
 
     private void handleEnteringBlock(JsonObject message) {
         String driverId = String.valueOf(message.get("driverId").getAsInt());
-        Gson gson = new Gson();
-        Map<String, Object> driverInfo = gson.fromJson(message,Map.class);
+        Map<String, Object> driverInfo = typeHandler(message);
         driverInfo.put("status", "AVAILABLE");
         driverLocStore.put(driverId, driverInfo);
     }
@@ -163,5 +165,16 @@ public class DriverMatchTask implements StreamTask, InitableTask {
 
         // Calculate weighted match score
         return distanceScore * 0.4 + genderScore * 0.1 + ratingScore * 0.3 + salaryScore * 0.2;
+    }
+
+    private Map<String,Object> typeHandler(JsonObject jsonObject) {
+        Type type = new TypeToken<HashMap<String, Object>>() {}.getType();
+        HashMap<String, Object> map = gson.fromJson(jsonObject, type);
+
+        // Convert all numeric values to their proper types
+        map.replaceAll((key, value) -> value instanceof Double && Math.floor((Double) value) == (Double) value
+                ? ((Double) value).intValue()
+                : value);
+        return map;
     }
 }
