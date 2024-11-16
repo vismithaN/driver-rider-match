@@ -5,6 +5,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.samza.serializers.NoOpSerde;
 import org.apache.samza.test.framework.TestRunner;
@@ -45,25 +46,24 @@ public class TestDriverMatchTask {
         Assert.assertEquals(5, TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).size());
 
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> genderTest = objectMapper.readValue(resultIter.next().toString(), Map.class);
 
-        System.out.println(resultIter.next().toString());
-        Gson gson = new Gson();
-        Map<String, Object> genderTest = gson.fromJson(resultIter.next().toString(), Map.class);
-        System.out.println("TEst" + genderTest.toString());
+        System.out.println("Test" + genderTest.toString());
         Assert.assertTrue(genderTest.get("clientId").toString().equals("3")
                 && genderTest.get("driverId").toString().equals("9001"));
 
-        Map<String, Object> salaryTest = gson.fromJson(resultIter.next().toString(), Map.class);
+        Map<String, Object> salaryTest = objectMapper.readValue(resultIter.next().toString(), Map.class);
         Assert.assertTrue(salaryTest.get("clientId").toString().equals("4")
                 && salaryTest.get("driverId").toString().equals("8000"));
 
-        Map<String, Object> ratingTest = gson.fromJson(resultIter.next().toString(), Map.class);
+        Map<String, Object> ratingTest = objectMapper.readValue(resultIter.next().toString(), Map.class);
         Assert.assertTrue(ratingTest.get("clientId").toString().equals("5")
                 && ratingTest.get("driverId").toString().equals("8000"));
-        Map<String, Object> distanceTest = gson.fromJson(resultIter.next().toString(), Map.class);
+        Map<String, Object> distanceTest = objectMapper.readValue(resultIter.next().toString(), Map.class);
         Assert.assertTrue(distanceTest.get("clientId").toString().equals("6")
                 && distanceTest.get("driverId").toString().equals("7001"));
-        Map<String, Object> rightBlockTest = gson.fromJson(resultIter.next().toString(), Map.class);
+        Map<String, Object> rightBlockTest = objectMapper.readValue(resultIter.next().toString(), Map.class);
         System.out.println(rightBlockTest.get("clientId").toString());
         System.out.println(rightBlockTest.get("driverId").toString());
         Assert.assertTrue(rightBlockTest.get("clientId").toString().equals("7")
