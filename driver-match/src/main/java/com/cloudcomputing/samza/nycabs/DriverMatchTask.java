@@ -1,5 +1,6 @@
 package com.cloudcomputing.samza.nycabs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import org.apache.samza.context.Context;
@@ -48,7 +49,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         */
         String incomingStream = envelope.getSystemStreamPartition().getStream();
         JsonParser parser = new JsonParser();
-        JsonElement jsonElement = parser.parse((String) envelope.getMessage());
+        JsonElement jsonElement = parser.parse(new ObjectMapper().writeValueAsString(envelope.getMessage()));
         JsonObject message = jsonElement.getAsJsonObject();
 
         if (incomingStream.equals(DriverMatchConfig.DRIVER_LOC_STREAM.getStream())) {
