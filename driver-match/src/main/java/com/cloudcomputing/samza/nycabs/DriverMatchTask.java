@@ -9,8 +9,10 @@ import org.apache.samza.task.InitableTask;
 import org.apache.samza.task.MessageCollector;
 import org.apache.samza.task.StreamTask;
 import org.apache.samza.task.TaskCoordinator;
+import org.codehaus.jackson.map.ObjectMapper;
 
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,6 +21,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
     private KeyValueStore<String, Map<String, Object>> driverLocStore;
     private final double MAX_MONEY = 100.0;
     private final double MAX_RATING = 5.0;
+    private final static ObjectMapper mapper = new ObjectMapper();
 
     @Override
     @SuppressWarnings("unchecked")
@@ -29,7 +32,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void process(IncomingMessageEnvelope envelope, MessageCollector collector, TaskCoordinator coordinator) {
+    public void process(IncomingMessageEnvelope envelope, MessageCollector collector, TaskCoordinator coordinator) throws Exception {
         String incomingStream = envelope.getSystemStreamPartition().getStream();
         Map<String,Object> message = (Map<String, Object>)envelope.getMessage();
 
@@ -64,7 +67,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         driverLocStore.put(driverId, message);
     }
 
-    private void handleRideRequest(Map<String,Object> message, MessageCollector collector) {
+    private void handleRideRequest(Map<String,Object> message, MessageCollector collector) throws Exception {
         int clientId = Integer.parseInt(message.get("clientId").toString());
         int blockId = Integer.parseInt(message.get("blockId").toString());
         String clientGenderPreference = message.get("gender_preference") == null
@@ -94,7 +97,8 @@ public class DriverMatchTask implements StreamTask, InitableTask {
             Map<String,Object> output = new HashMap<>();
             output.put("clientId", clientId);
             output.put("driverId", driverId);
-            collector.send(new OutgoingMessageEnvelope(DriverMatchConfig.MATCH_STREAM, output.toString()));
+
+            collector.send(new OutgoingMessageEnvelope(DriverMatchConfig.MATCH_STREAM, mapper.writeValueAsString(output)));
 
             // Update driver status in the KV store
             bestMatchDriver.put("status", "UNAVAILABLE");
@@ -107,7 +111,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         Map<String, Object> driver = driverLocStore.get(driverId);
         if (driver != null) {
             // Update rating and mark driver as AVAILABLE
-            double oldRating = Double.parseDouble(driver.get("rating").toString());
+            double oldRating = Double.parseDouble(message.get("rating").toString());
             double userRating = Double.parseDouble(message.get("user_rating").toString());
             driver.put("rating", (oldRating + userRating) / 2);
             driver.put("status", "AVAILABLE");

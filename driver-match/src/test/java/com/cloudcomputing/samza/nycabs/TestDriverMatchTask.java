@@ -48,19 +48,18 @@ public class TestDriverMatchTask {
         String genderTest =  "{clientId=3, driverId=9001}";
         Assert.assertEquals(resultIter.next(), genderTest);
 
-
         String salaryTest =  "{clientId=4, driverId=8000}";
         Assert.assertEquals(resultIter.next(), salaryTest);
-
 
         String ratingTest =  "{clientId=5, driverId=8000}";
         Assert.assertEquals(resultIter.next(), ratingTest);
 
-
         String distanceTest =  "{clientId=6, driverId=7001}";
         Assert.assertEquals(resultIter.next(), distanceTest);
-       
+
         String rightBlockTest =  "{clientId=7, driverId=3002}";
         Assert.assertEquals(resultIter.next(), rightBlockTest);
     }
+
+
 }
