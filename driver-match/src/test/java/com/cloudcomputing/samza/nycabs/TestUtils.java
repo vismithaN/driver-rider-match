@@ -15,26 +15,23 @@ import java.util.stream.Collectors;
 
 public class TestUtils {
     public static List<JsonObject> genStreamData(String channel) {
-        String streamDataRawStrings = null;
+        List<JsonObject> streamDataRawStrings = null;
         if (channel.equals("events")) {
-            streamDataRawStrings = "driver-match/src/test/resources/events.txt";
+            streamDataRawStrings = readFile("events.txt");
         } else if (channel.equals("driver-locations")) {
-            streamDataRawStrings = "driver-match/src/test/resources/driverLocations.txt";
+            streamDataRawStrings = readFile("driverLocations.txt");
         }
-        List<JsonObject> result = new ArrayList<>();
+        return streamDataRawStrings;
+
         // Convert raw strings to JSON strings
-        try (BufferedReader br = new BufferedReader(new FileReader(streamDataRawStrings))) {
-            String log;
-            while ((log = br.readLine()) != null) {
-                JsonParser parser = new JsonParser();
-                JsonElement jsonElement = parser.parse(log);
-                JsonObject json = jsonElement.getAsJsonObject();
-                result.add(json);
-            }
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
+//        try (BufferedReader br = new BufferedReader(new FileReader(traceFileName))) {
+//            String log;
+//            while ((log = br.readLine()) != null) {
+//                JsonParser parser = new JsonParser();
+//                JsonElement jsonElement = parser.parse(log);
+//                JsonObject json = jsonElement.getAsJsonObject();
+//            }
+//        }
 
 //        return streamDataRawStrings.stream().map(s -> {
 //            Map<String, Object> result;
@@ -49,14 +46,17 @@ public class TestUtils {
 //        }).filter(x -> x != null).collect(Collectors.toList());
     }
 
-    private static List<String> readFile(String path) {
+    private static List<JsonObject> readFile(String path) {
         try {
             InputStream in = Resources.getResource(path).openStream();
-            List<String> lines = new ArrayList<>();
+            List<JsonObject> lines = new ArrayList<>();
             String line = null;
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             while ((line = reader.readLine()) != null) {
-                lines.add(line);
+                JsonParser parser = new JsonParser();
+                JsonElement jsonElement = parser.parse(line);
+                JsonObject json = jsonElement.getAsJsonObject();
+                lines.add(json);
             }
             reader.close();
             return lines;
