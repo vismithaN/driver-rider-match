@@ -1,12 +1,12 @@
 package com.cloudcomputing.samza.nycabs;
 
 import com.google.common.io.Resources;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +21,7 @@ public class TestUtils {
         } else if (channel.equals("driver-locations")) {
             streamDataRawStrings = readFile("driverLocations.txt");
         }
+
         return streamDataRawStrings.stream().map(s -> {
             Map<String, Object> result;
             ObjectMapper mapper = new ObjectMapper();
@@ -35,20 +36,19 @@ public class TestUtils {
     }
 
     private static List<String> readFile(String path) {
-            try {
-                InputStream in = Resources.getResource(path).openStream();
-                List<String> lines = new ArrayList<>();
-                String line = null;
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                while ((line = reader.readLine()) != null) {
-                    lines.add(line);
-                }
-                reader.close();
-                return lines;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
+        try {
+            InputStream in = Resources.getResource(path).openStream();
+            List<String> lines = new ArrayList<>();
+            String line = null;
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
             }
+            reader.close();
+            return lines;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
