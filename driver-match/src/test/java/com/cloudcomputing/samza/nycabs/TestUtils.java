@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TestUtils {
-    public static List<Map<String, Object>> genStreamData(String channel) {
+    public static List<String> genStreamData(String channel) {
         List<String> streamDataRawStrings = null;
         if (channel.equals("events")) {
             streamDataRawStrings = readFile("events.txt");
@@ -22,19 +22,21 @@ public class TestUtils {
             streamDataRawStrings = readFile("driverLocations.txt");
         }
 
-        System.out.println("STream Raw String" + streamDataRawStrings);
 
-        return streamDataRawStrings.stream().map(s -> {
-            Map<String, Object> result;
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                result =  mapper.readValue(s, HashMap.class);
-                return result;
-            } catch (Exception e) {
-                System.out.println("Failed in parse " + s + ", skip into next line");
-            }
-            return null;
-        }).filter(x -> x != null).collect(Collectors.toList());
+        System.out.println("Stream Raw String" + streamDataRawStrings);
+        return streamDataRawStrings;
+
+//        return streamDataRawStrings.stream().map(s -> {
+//            Map<String, Object> result;
+//            ObjectMapper mapper = new ObjectMapper();
+//            try {
+//                result =  mapper.readValue(s, HashMap.class);
+//                return result;
+//            } catch (Exception e) {
+//                System.out.println("Failed in parse " + s + ", skip into next line");
+//            }
+//            return null;
+//        }).filter(x -> x != null).collect(Collectors.toList());
     }
 
     private static List<String> readFile(String path) {
