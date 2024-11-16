@@ -44,26 +44,23 @@ public class TestDriverMatchTask {
         Assert.assertEquals(5, TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).size());
 
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
-        System.out.println("Print this" + resultIter.next());
+
+        String genderTest =  "{clientId=3, driverId=9001}";
+        Assert.assertEquals(resultIter.next(), genderTest);
+
+
+        String salaryTest =  "{clientId=4, driverId=8000}";
+        Assert.assertEquals(resultIter.next(), salaryTest);
+
+
+        String ratingTest =  "{clientId=5, driverId=8000}";
+        Assert.assertEquals(resultIter.next(), ratingTest);
+
+
+        String distanceTest =  "{clientId=6, driverId=7001}";
+        Assert.assertEquals(resultIter.next(), distanceTest);
        
-        String result1 =  "{clientId=3, driverId=9001}";
-        Assert.assertEquals(resultIter.next(), result1);
-
-
-        Map<String, Object> salaryTest = (Map<String, Object>) resultIter.next();
-        Assert.assertTrue(salaryTest.get("clientId").toString().equals("4")
-                && salaryTest.get("driverId").toString().equals("8000"));
-
-        Map<String, Object> ratingTest = (Map<String, Object>) resultIter.next();
-        Assert.assertTrue(ratingTest.get("clientId").toString().equals("5")
-                && ratingTest.get("driverId").toString().equals("8000"));
-        Map<String, Object> distanceTest = (Map<String, Object>) resultIter.next();
-        Assert.assertTrue(distanceTest.get("clientId").toString().equals("6")
-                && distanceTest.get("driverId").toString().equals("7001"));
-        Map<String, Object> rightBlockTest = (Map<String, Object>) resultIter.next();
-        System.out.println(rightBlockTest.get("clientId").toString());
-        System.out.println(rightBlockTest.get("driverId").toString());
-        Assert.assertTrue(rightBlockTest.get("clientId").toString().equals("7")
-                && rightBlockTest.get("driverId").toString().equals("3002"));
+        String rightBlockTest =  "{clientId=7, driverId=3002}";
+        Assert.assertEquals(resultIter.next(), rightBlockTest);
     }
 }
