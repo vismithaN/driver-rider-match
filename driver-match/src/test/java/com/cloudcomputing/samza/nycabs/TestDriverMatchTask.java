@@ -45,8 +45,9 @@ public class TestDriverMatchTask {
 
         Assert.assertEquals(5, TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).size());
 
-        ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
+        ListIterator resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
         ObjectMapper objectMapper = new ObjectMapper();
+
         Map<String, Object> genderTest = (Map<String, Object>) resultIter.next();
 
         System.out.println("Test" + genderTest.toString());
