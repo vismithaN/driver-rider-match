@@ -1,10 +1,6 @@
 package com.cloudcomputing.samza.nycabs;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import org.apache.samza.context.Context;
-import org.apache.samza.storage.kv.Entry;
 import org.apache.samza.storage.kv.KeyValueIterator;
 import org.apache.samza.storage.kv.KeyValueStore;
 import org.apache.samza.system.IncomingMessageEnvelope;
@@ -13,51 +9,36 @@ import org.apache.samza.task.InitableTask;
 import org.apache.samza.task.MessageCollector;
 import org.apache.samza.task.StreamTask;
 import org.apache.samza.task.TaskCoordinator;
-import com.google.gson.JsonObject;
 
 
-/**
- * Consumes the stream of driver location updates and rider cab requests.
- * Outputs a stream which joins these 2 streams and gives a stream of rider to
- * driver matches.
- */
+import java.util.HashMap;
+import java.util.Map;
+
 public class DriverMatchTask implements StreamTask, InitableTask {
 
-    /* Define per task state here. (kv stores etc)
-       READ Samza API part in Primer to understand how to start
-    */
-    private KeyValueStore<String, JsonObject> driverLocStore;
-    private static final double MAX_MONEY = 100.0;
-    private static final double MAX_RATING = 5.0;
-
+    private KeyValueStore<String, Map<String, Object>> driverLocStore;
+    private final double MAX_MONEY = 100.0;
+    private final double MAX_RATING = 5.0;
 
     @Override
     @SuppressWarnings("unchecked")
-    public void init(Context context) throws Exception {
-        // Initialize (maybe the kv stores?)
-        driverLocStore = (KeyValueStore<String, JsonObject>) context.getTaskContext().getStore("driver-loc");
+    public void init(Context context) {
+        // Initialize the KeyValueStore (assuming driverLocStore is defined in the config)
+        driverLocStore = (KeyValueStore<String, Map<String, Object>>) context.getTaskContext().getStore("driver-loc");
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void process(IncomingMessageEnvelope envelope, MessageCollector collector, TaskCoordinator coordinator) throws Exception {
-        /*
-        All the messsages are partitioned by blockId, which means the messages
-        sharing the same blockId will arrive at the same task, similar to the
-        approach that MapReduce sends all the key value pairs with the same key
-        into the same reducer.
-        */
+    public void process(IncomingMessageEnvelope envelope, MessageCollector collector, TaskCoordinator coordinator) {
         String incomingStream = envelope.getSystemStreamPartition().getStream();
-        JsonParser parser = new JsonParser();
-        JsonElement jsonElement = parser.parse(new ObjectMapper().writeValueAsString(envelope.getMessage()));
-        JsonObject message = jsonElement.getAsJsonObject();
+        Map<String,Object> message = (Map<String, Object>)envelope.getMessage();
 
         if (incomingStream.equals(DriverMatchConfig.DRIVER_LOC_STREAM.getStream())) {
-
+            // Handle Driver Location messages
             handleDriverLocation(message);
         } else if (incomingStream.equals(DriverMatchConfig.EVENT_STREAM.getStream())) {
-
-            String eventType = message.get("type").getAsString();
+            // Handle Event messages
+            String eventType = message.get("type").toString();
             switch (eventType) {
                 case "RIDE_REQUEST":
                     handleRideRequest(message, collector);
@@ -77,27 +58,27 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         }
     }
 
-    private void handleDriverLocation(JsonObject message) {
+    private void handleDriverLocation(Map<String,Object> message) {
         // Store driver location and update availability
-        String driverId = String.valueOf(message.get("driverId").getAsInt());
+        String driverId = String.valueOf(message.get("driverId"));
         driverLocStore.put(driverId, message);
     }
 
-    private void handleRideRequest(JsonObject message, MessageCollector collector) {
-        int clientId = message.get("clientId").getAsInt();
-        int blockId = message.get("blockId").getAsInt();
-        String clientGenderPreference = message.get("gender_preference").getAsString();
-        double clientLatitude = message.get("latitude").getAsDouble();
-        double clientLongitude = message.get("longitude").getAsDouble();
+    private void handleRideRequest(Map<String,Object> message, MessageCollector collector) {
+        int clientId = Integer.parseInt(message.get("clientId").toString());
+        int blockId = Integer.parseInt(message.get("blockId").toString());
+        String clientGenderPreference = message.get("gender_preference") == null
+                ? "N": message.get("gender_preference").toString();
+        double clientLatitude = Double.parseDouble(message.get("latitude").toString());
+        double clientLongitude = Double.parseDouble(message.get("longitude").toString());
 
-        JsonObject bestMatchDriver = null;
+        Map<String, Object> bestMatchDriver = null;
         double highestMatchScore = -1;
-        KeyValueIterator<String, JsonObject> drivers = driverLocStore.all();
+        KeyValueIterator<String,Map<String,Object>> iterator = driverLocStore.all();
 
-        while (drivers.hasNext()) {
-            Entry<String, JsonObject> entry = drivers.next();
-            JsonObject driver = entry.getValue();
-            if (driver.get("blockId").getAsInt() == blockId && "AVAILABLE".equals(driver.get("status").getAsString())) {
+        while(iterator.hasNext()) {
+            Map<String, Object> driver = iterator.next().getValue();
+            if (driver.get("blockId").equals(blockId) && "AVAILABLE".equals(driver.get("status"))) {
                 double matchScore = calculateMatchScore(driver, clientLatitude, clientLongitude, clientGenderPreference);
 
                 if (matchScore > highestMatchScore) {
@@ -109,58 +90,59 @@ public class DriverMatchTask implements StreamTask, InitableTask {
 
         if (bestMatchDriver != null) {
             // Output match to match-stream
-            int driverId = bestMatchDriver.get("driverId").getAsInt();
-            JsonObject output = new JsonObject();
-            output.addProperty("clientId", clientId);
-            output.addProperty("driverId", driverId);
+            int driverId = (int) bestMatchDriver.get("driverId");
+            Map<String,Object> output = new HashMap<>();
+            output.put("clientId", clientId);
+            output.put("driverId", driverId);
             collector.send(new OutgoingMessageEnvelope(DriverMatchConfig.MATCH_STREAM, output.toString()));
 
             // Update driver status in the KV store
-            bestMatchDriver.addProperty("status", "UNAVAILABLE");
+            bestMatchDriver.put("status", "UNAVAILABLE");
             driverLocStore.put(String.valueOf(driverId), bestMatchDriver);
         }
     }
 
-    private void handleRideComplete(JsonObject message) {
+    private void handleRideComplete(Map<String,Object> message) {
         String driverId = String.valueOf(message.get("driverId"));
-        JsonObject driver = driverLocStore.get(driverId);
+        Map<String, Object> driver = driverLocStore.get(driverId);
         if (driver != null) {
             // Update rating and mark driver as AVAILABLE
-            double oldRating = driver.get("rating").getAsDouble();
-            double userRating = message.get("user_rating").getAsDouble();
-            driver.addProperty("rating", (oldRating + userRating) / 2);
-            driver.addProperty("status", "AVAILABLE");
+            double oldRating = Double.parseDouble(driver.get("rating").toString());
+            double userRating = Double.parseDouble(message.get("user_rating").toString());
+            driver.put("rating", (oldRating + userRating) / 2);
+            driver.put("status", "AVAILABLE");
 
             // Update location if provided
-            driver.addProperty("blockId", message.get("blockId").getAsInt());
-            driver.addProperty("latitude", message.get("latitude").getAsDouble());
-            driver.addProperty("longitude", message.get("longitude").getAsDouble());
+            driver.put("blockId", Integer.parseInt(message.get("blockId").toString()));
+            driver.put("latitude", Double.parseDouble(message.get("latitude").toString()));
+            driver.put("longitude", Double.parseDouble(message.get("longitude").toString()));
 
             driverLocStore.put(driverId, driver);
         }
     }
 
-    private void handleLeavingBlock(JsonObject message) {
+    private void handleLeavingBlock(Map<String,Object> message) {
         String driverId = String.valueOf(message.get("driverId"));
-        JsonObject driver = driverLocStore.get(driverId);
+        Map<String, Object> driver = driverLocStore.get(driverId);
         if (driver != null) {
-            driver.addProperty("status", "UNAVAILABLE");
+            driver.put("status", "UNAVAILABLE");
             driverLocStore.put(driverId, driver);
         }
     }
 
-    private void handleEnteringBlock(JsonObject message) {
+    private void handleEnteringBlock(Map<String,Object> message) {
         String driverId = String.valueOf(message.get("driverId"));
-        message.addProperty("status", "AVAILABLE");
-        driverLocStore.put(driverId, message);
+        Map<String, Object> driverInfo = message;
+        driverInfo.put("status", "AVAILABLE");
+        driverLocStore.put(driverId, driverInfo);
     }
 
-    private double calculateMatchScore(JsonObject driver, double clientLatitude, double clientLongitude, String clientGenderPreference) {
-        double driverLatitude = driver.get("latitude").getAsDouble();
-        double driverLongitude = driver.get("longitude").getAsDouble();
-        String driverGender = driver.get("gender").getAsString();
-        double driverRating = driver.get("rating").getAsDouble();
-        double driverSalary = driver.get("salary").getAsDouble();
+    private double calculateMatchScore(Map<String, Object> driver, double clientLatitude, double clientLongitude, String clientGenderPreference) {
+        double driverLatitude = (double) driver.get("latitude");
+        double driverLongitude = (double) driver.get("longitude");
+        String driverGender = (String) driver.get("gender");
+        double driverRating = (double) driver.get("rating");
+        double driverSalary = (double) driver.get("salary");
 
         // Calculate distance score
         double distance = Math.sqrt(Math.pow(clientLatitude - driverLatitude, 2) + Math.pow(clientLongitude - driverLongitude, 2));
@@ -176,7 +158,4 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         // Calculate weighted match score
         return distanceScore * 0.4 + genderScore * 0.1 + ratingScore * 0.3 + salaryScore * 0.2;
     }
-
-
-
 }

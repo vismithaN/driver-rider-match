@@ -36,11 +36,11 @@ public class DriverMatchTaskApplication implements TaskApplication {
         // "match-stream".
 
         // Define your input and output descriptor in here.
-        KafkaInputDescriptor<String> driverInput =
+        KafkaInputDescriptor driverInput =
                 kafkaSystemDescriptor.getInputDescriptor("driver-locations", new JsonSerde<>());
-        KafkaInputDescriptor<String> eventsInput =
+        KafkaInputDescriptor eventsInput =
                 kafkaSystemDescriptor.getInputDescriptor("events", new JsonSerde<>());
-        KafkaOutputDescriptor<String> matchOutput =
+        KafkaOutputDescriptor  matchOutput =
                 kafkaSystemDescriptor.getOutputDescriptor("match-stream", new JsonSerde<>());
 
         taskApplicationDescriptor.withDefaultSystem(kafkaSystemDescriptor);
