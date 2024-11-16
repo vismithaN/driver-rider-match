@@ -22,9 +22,26 @@ public class TestUtils {
             streamDataRawStrings = readFile("driverLocations.txt");
         }
 
+        // Convert raw strings to JSON strings
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<String> jsonStrings = streamDataRawStrings.stream()
+                .map(raw -> {
+                    try {
+                        // Convert the raw string to JSON object and back to a JSON string
+                        Object jsonObject = objectMapper.readValue(raw, Object.class);
+                        return objectMapper.writeValueAsString(jsonObject);
+                    } catch (Exception e) {
+                        // Handle any parsing exceptions
+                        System.err.println("Invalid JSON: " + raw);
+                        e.printStackTrace();
+                        return null; // Skip invalid JSON strings
+                    }
+                })
+                .filter(json -> json != null) // Filter out invalid JSON strings
+                .collect(Collectors.toList());
 
-        System.out.println("Stream Raw String" + streamDataRawStrings);
-        return streamDataRawStrings;
+        System.out.println("Stream JSON Strings: " + jsonStrings);
+        return jsonStrings;
 
 //        return streamDataRawStrings.stream().map(s -> {
 //            Map<String, Object> result;
