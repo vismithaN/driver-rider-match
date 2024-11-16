@@ -49,21 +49,21 @@ public class TestDriverMatchTask {
         System.out.println(resultIter.next().toString());
         Gson gson = new Gson();
         Map<String, Object> genderTest = gson.fromJson(resultIter.next().toString(), Map.class);
-
+        System.out.println("TEst" + genderTest.toString());
         Assert.assertTrue(genderTest.get("clientId").toString().equals("3")
                 && genderTest.get("driverId").toString().equals("9001"));
 
-        Map<String, Object> salaryTest = (Map<String, Object>) resultIter.next();
+        Map<String, Object> salaryTest = gson.fromJson(resultIter.next().toString(), Map.class);
         Assert.assertTrue(salaryTest.get("clientId").toString().equals("4")
                 && salaryTest.get("driverId").toString().equals("8000"));
 
-        Map<String, Object> ratingTest = (Map<String, Object>) resultIter.next();
+        Map<String, Object> ratingTest = gson.fromJson(resultIter.next().toString(), Map.class);
         Assert.assertTrue(ratingTest.get("clientId").toString().equals("5")
                 && ratingTest.get("driverId").toString().equals("8000"));
-        Map<String, Object> distanceTest = (Map<String, Object>) resultIter.next();
+        Map<String, Object> distanceTest = gson.fromJson(resultIter.next().toString(), Map.class);
         Assert.assertTrue(distanceTest.get("clientId").toString().equals("6")
                 && distanceTest.get("driverId").toString().equals("7001"));
-        Map<String, Object> rightBlockTest = (Map<String, Object>) resultIter.next();
+        Map<String, Object> rightBlockTest = gson.fromJson(resultIter.next().toString(), Map.class);
         System.out.println(rightBlockTest.get("clientId").toString());
         System.out.println(rightBlockTest.get("driverId").toString());
         Assert.assertTrue(rightBlockTest.get("clientId").toString().equals("7")
