@@ -52,16 +52,16 @@ public class TestDriverMatchTask {
         Assert.assertEquals(resultIter.next(), mapper.readTree(genderTest));
 
         String salaryTest = "{\"clientId\":4,\"driverId\":8000}";
-        Assert.assertEquals(resultIter.next(), salaryTest);
+        Assert.assertEquals(resultIter.next(), mapper.readTree(salaryTest));
 
         String ratingTest = "{\"clientId\":5,\"driverId\":8000}";
-        Assert.assertEquals(resultIter.next(), ratingTest);
+        Assert.assertEquals(resultIter.next(), mapper.readTree(ratingTest));
 
         String distanceTest = "{\"clientId\":6,\"driverId\":7001}";
-        Assert.assertEquals(resultIter.next(), distanceTest);
+        Assert.assertEquals(resultIter.next(), mapper.readTree(distanceTest));
 
         String rightBlockTest = "{\"clientId\":7,\"driverId\":3002}";
-        Assert.assertEquals(resultIter.next(), rightBlockTest);
+        Assert.assertEquals(resultIter.next(), mapper.readTree(rightBlockTest));
     }
 
 
