@@ -82,7 +82,9 @@ public class DriverMatchTask implements StreamTask, InitableTask {
             if (Integer.parseInt(driver.get("blockId").toString()) == clientBlockId &&
                     "AVAILABLE".equals(driver.get("status"))) {
                 double matchScore = calculateMatchScore(driver, clientLatitude, clientLongitude, clientGenderPreference);
-                System.out.println("Match score: " + matchScore + "Driver:" + driver.get("blockId").toString()+"\n\n\n\n");
+                System.out.println("USerID" + clientId
+                        +"Match score: " + matchScore
+                        + "Driver:" + driver.get("driverId").toString()+"\n\n\n\n");
                 if (matchScore > highestMatchScore) {
                     highestMatchScore = matchScore;
                     bestMatchDriver = driver;
