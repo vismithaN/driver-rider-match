@@ -2,17 +2,50 @@
   "referenceGuide":"Cite all the reference sources in the required format. Proper citations will help you avoid unnecessary trouble but does not make it acceptable to copy code. Read the course and university policy statements in this regard. When working with others, limit the discussion to block diagrams and arrows. Do not look at another students' code. Read the JSON semantics and make use of JSON validator from the Internet if needed.",
   "websites":[
     {
-      "title":"<title of the page>",
-      "url":"<url>",
-      "code":"<explain in which part of your code did you use the snippet or idea>",
-      "description":"<additional information you may find necessary to provide>"
-    }
-  ],
-  "collaborators":[
-    {
-      "andrewId":"<collaborator andrewId>",
-      "collaborationType":"<I helped X, X helped me, or we helped each other>",
-      "description":"<describe the idea discussed or shared>"
-    }
+          "title":"Testing Samza jobs: Integration Framework",
+          "url":"https://samza.apache.org/learn/documentation/versioned/api/test-framework.html",
+          "code":"public class BadPageViewFilter implements StreamApplication {
+                        @Override
+                        public void describe(StreamApplicationDescriptor appDesc) {
+                          KafkaSystemDescriptor kafka = new KafkaSystemDescriptor("test");
+                          InputDescriptor<PageView> pageViewInput = kafka.getInputDescriptor(“page-views”, new JsonSerdeV2<>(PageView.class));
+                          OutputDescriptor<DecoratedPageView> outputPageViews = kafka.getOutputDescriptor( “decorated-page-views”, new JsonSerdeV2<>(DecoratedPageView.class));
+                          MessageStream<PageView> pageViews = appDesc.getInputStream(pageViewInput);
+                          pageViews.filter(this::isValidPageView)
+                              .map(this::addProfileInformation)
+                              .sendTo(appDesc.getOutputStream(outputPageViews));
+                        }
+                      }",
+          "description":"How to add Input, Output and Kafka descritors to TaskApplicationDescriptor"
+    },
+     {
+              "title":"Github samza-hello-samza",
+              "url":"https://github.com/apache/samza-hello-samza/blob/master/src/main/java/samza/examples/wikipedia/task/application/WikipediaStatsTaskApplication.java",
+              "code":" {
+                               KafkaSystemDescriptor kafkaSystemDescriptor = new KafkaSystemDescriptor("kafka")
+                              .withConsumerZkConnect(KAFKA_CONSUMER_ZK_CONNECT)
+                              .withProducerBootstrapServers(KAFKA_PRODUCER_BOOTSTRAP_SERVERS)
+                              .withDefaultStreamConfigs(KAFKA_DEFAULT_STREAM_CONFIGS);
+
+                          // Input descriptor for the wikipedia-edits topic
+                          KafkaInputDescriptor kafkaInputDescriptor =
+                              kafkaSystemDescriptor.getInputDescriptor("wikipedia-edits", new JsonSerde<>());
+
+                          // Set the default system descriptor to Kafka, so that it is used for all
+                          // internal resources, e.g., kafka topic for checkpointing, coordinator stream.
+                          taskApplicationDescriptor.withDefaultSystem(kafkaSystemDescriptor);
+
+                          // Set the input
+                          taskApplicationDescriptor.withInputStream(kafkaInputDescriptor);
+
+                          // Set the output
+                          taskApplicationDescriptor.withOutputStream(
+                              kafkaSystemDescriptor.getOutputDescriptor("wikipedia-stats", new JsonSerde<>()));
+
+                          // Set the task factory
+                          taskApplicationDescriptor.withTaskFactory((StreamTaskFactory) () -> new WikipediaStatsStreamTask());
+                        }",
+              "description":"How to add Input, Output and Kafka descritors to TaskApplicationDescriptor"
+        }
   ]
 }

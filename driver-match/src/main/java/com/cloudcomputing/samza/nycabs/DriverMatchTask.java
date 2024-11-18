@@ -83,10 +83,8 @@ public class DriverMatchTask implements StreamTask, InitableTask {
                     "AVAILABLE".equals(driver.get("status"))) {
                 double matchScore = calculateMatchScore(driver, clientLatitude, clientLongitude, clientGenderPreference);
                 if (matchScore > highestMatchScore) {
-//                    System.out.println("Inside if conditiond for match score and driver ID" + matchScore+"\n");
                     highestMatchScore = matchScore;
                     bestMatchDriver = driver;
-//                    System.out.println("Best driver is" + bestMatchDriver.get("driverId")+"\n");
                 }
             }
         }
@@ -94,11 +92,9 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         if (bestMatchDriver != null) {
             // Output match to match-stream
             int driverId = Integer.parseInt(bestMatchDriver.get("driverId").toString());
-            System.out.println("Best driver for Client:"+clientId +"is:" + driverId+ "\n\n");
             Map<String,Object> output = new HashMap<>();
             output.put("clientId", clientId);
             output.put("driverId", driverId);
-//            System.out.println("Output is" + output +"\n");
             collector.send(new OutgoingMessageEnvelope(DriverMatchConfig.MATCH_STREAM, mapper.readTree(mapper.writeValueAsString(output))));
 
             // Update driver status in the KV store
