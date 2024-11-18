@@ -101,8 +101,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
             Map<String,Object> output = new HashMap<>();
             output.put("clientId", clientId);
             output.put("driverId", driverId);
-
-            mapper.readTree(mapper.writeValueAsString(output));
+            System.out.println("Output is" + output +"\n");
             collector.send(new OutgoingMessageEnvelope(DriverMatchConfig.MATCH_STREAM, mapper.readTree(mapper.writeValueAsString(output))));
 
             // Update driver status in the KV store
