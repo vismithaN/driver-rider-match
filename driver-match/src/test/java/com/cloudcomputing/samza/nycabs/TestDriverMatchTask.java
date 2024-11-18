@@ -86,22 +86,22 @@ public class TestDriverMatchTask {
     }
 
 //    @Test
-    public void testNoDriverAvailable() throws Exception {
-        Map<String, String> confMap = new HashMap<>();
-        // Add necessary configurations...
-
-        TestRunner
-                .of(new DriverMatchTaskApplication())
-                .addInputStream(imevents, TestUtils.genStreamData("events_no_driver"))
-                .addInputStream(imdriverLocation, TestUtils.genStreamData("driver-locations_no_driver"))
-                .addOutputStream(outputMatchStream, 1)
-                .addConfig(confMap)
-                .addConfig("deploy.test", "true")
-                .run(Duration.ofSeconds(5));
-
-        List<Object> results = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0);
-        Assert.assertTrue(results.isEmpty()); // No match should be made
-    }
+//    public void testNoDriverAvailable() throws Exception {
+//        Map<String, String> confMap = new HashMap<>();
+//        // Add necessary configurations...
+//
+//        TestRunner
+//                .of(new DriverMatchTaskApplication())
+//                .addInputStream(imevents, TestUtils.genStreamData("events_no_driver"))
+//                .addInputStream(imdriverLocation, TestUtils.genStreamData("driver-locations_no_driver"))
+//                .addOutputStream(outputMatchStream, 1)
+//                .addConfig(confMap)
+//                .addConfig("deploy.test", "true")
+//                .run(Duration.ofSeconds(5));
+//
+//        List<Object> results = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0);
+//        Assert.assertTrue(results.isEmpty()); // No match should be made
+//    }
 
 
 }
