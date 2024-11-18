@@ -20,6 +20,8 @@ public class TestUtils {
             streamDataRawStrings = readFile("events.txt");
         } else if (channel.equals("driver-locations")) {
             streamDataRawStrings = readFile("driverLocations.txt");
+        } else if(channel.equals("nodrivers")) {
+            streamDataRawStrings = readFile("nodrivers.txt");
         }
 
         return streamDataRawStrings.stream().map(s -> {
