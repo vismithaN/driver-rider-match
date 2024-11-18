@@ -86,9 +86,10 @@ public class DriverMatchTask implements StreamTask, InitableTask {
                         +"Match score: " + matchScore
                         + "Driver:" + driver.get("driverId").toString()+"\n");
                 if (matchScore > highestMatchScore) {
-                    System.out.println("Inside if conditiond for match score and driver ID" + matchScore+"\n\n");
+                    System.out.println("Inside if conditiond for match score and driver ID" + matchScore+"\n");
                     highestMatchScore = matchScore;
                     bestMatchDriver = driver;
+                    System.out.println("Best driver is" + bestMatchDriver.get("driverId")+"\n");
                 }
             }
         }
@@ -96,6 +97,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         if (bestMatchDriver != null) {
             // Output match to match-stream
             int driverId = Integer.parseInt(bestMatchDriver.get("driverId").toString());
+            System.out.println("Best driver for Client:"+clientId +"is:" + driverId+ "\n\n");
             Map<String,Object> output = new HashMap<>();
             output.put("clientId", clientId);
             output.put("driverId", driverId);
