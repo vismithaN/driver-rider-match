@@ -39,7 +39,7 @@ public class TestDriverMatchTask {
         outputMatchStream = isd.getOutputDescriptor("match-stream", new NoOpSerde<>());
     }
 
-//    @Test
+    @Test
     public void testDriverMatchTask() throws Exception {
         TestRunner
                 .of(new DriverMatchTaskApplication())
@@ -85,23 +85,21 @@ public class TestDriverMatchTask {
         Assert.assertEquals(resultIter.next(), mapper.readTree(multipleDriverTest));
     }
 
-//    @Test
-//    public void testNoDriverAvailable() throws Exception {
-//        Map<String, String> confMap = new HashMap<>();
-//        // Add necessary configurations...
-//
-//        TestRunner
-//                .of(new DriverMatchTaskApplication())
-//                .addInputStream(imevents, TestUtils.genStreamData("events_no_driver"))
-//                .addInputStream(imdriverLocation, TestUtils.genStreamData("driver-locations_no_driver"))
-//                .addOutputStream(outputMatchStream, 1)
-//                .addConfig(confMap)
-//                .addConfig("deploy.test", "true")
-//                .run(Duration.ofSeconds(5));
-//
-//        List<Object> results = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0);
-//        Assert.assertTrue(results.isEmpty()); // No match should be made
-//    }
+    @Test
+    public void testNoDriverAvailable() throws Exception {
+
+        TestRunner
+                .of(new DriverMatchTaskApplication())
+                .addInputStream(imevents, TestUtils.genStreamData("nodrivers"))
+                .addInputStream(imdriverLocation, TestUtils.genStreamData("driver-locations"))
+                .addOutputStream(outputMatchStream, 1)
+                .addConfig(confMap)
+                .addConfig("deploy.test", "true")
+                .run(Duration.ofSeconds(5));
+
+        ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
+        Assert.assertNull(resultIter.next()); // No match should be made
+    }
 
 
 }
