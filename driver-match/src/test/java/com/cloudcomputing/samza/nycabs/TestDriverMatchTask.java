@@ -97,8 +97,7 @@ public class TestDriverMatchTask {
                 .addConfig("deploy.test", "true")
                 .run(Duration.ofSeconds(5));
 
-        ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
-        Assert.assertNull(resultIter.next()); // No match should be made
+        Assert.assertEquals(0, TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).size());
     }
 
 
