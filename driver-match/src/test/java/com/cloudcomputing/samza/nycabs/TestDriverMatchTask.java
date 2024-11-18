@@ -81,6 +81,7 @@ public class TestDriverMatchTask {
                 .run(Duration.ofSeconds(5));
 
         ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
+        System.out.println("What is in test" + resultIter.next());
         String multipleDriverTest = "{\"clientId\":3,\"driverId\":9002}";
         Assert.assertEquals(resultIter.next(), mapper.readTree(multipleDriverTest));
     }
