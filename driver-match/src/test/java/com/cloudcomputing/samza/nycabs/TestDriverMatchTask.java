@@ -12,30 +12,35 @@ import org.apache.samza.test.framework.system.descriptors.InMemoryOutputDescript
 import org.apache.samza.test.framework.system.descriptors.InMemorySystemDescriptor;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import com.cloudcomputing.samza.nycabs.application.DriverMatchTaskApplication;
 
 
 
 public class TestDriverMatchTask {
-    @Test
-    public void testDriverMatchTask() throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> confMap = new HashMap<>();
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, String> confMap = new HashMap<>();
+    InMemorySystemDescriptor isd;
+    InMemoryInputDescriptor imdriverLocation, imevents;
+    InMemoryOutputDescriptor outputMatchStream;
+
+
+    @Before public void setup() {
         confMap.put("stores.driver-loc.factory", "org.apache.samza.storage.kv.RocksDbKeyValueStorageEngineFactory");
         confMap.put("stores.driver-loc.key.serde", "string");
         confMap.put("stores.driver-loc.msg.serde", "json");
         confMap.put("serializers.registry.json.class", "org.apache.samza.serializers.JsonSerdeFactory");
         confMap.put("serializers.registry.string.class", "org.apache.samza.serializers.StringSerdeFactory");
 
-        InMemorySystemDescriptor isd = new InMemorySystemDescriptor("kafka");
+        isd = new InMemorySystemDescriptor("kafka");
+        imdriverLocation = isd.getInputDescriptor("driver-locations", new NoOpSerde<>());
+        imevents = isd.getInputDescriptor("events", new NoOpSerde<>());
+        outputMatchStream = isd.getOutputDescriptor("match-stream", new NoOpSerde<>());
+    }
 
-        InMemoryInputDescriptor imdriverLocation = isd.getInputDescriptor("driver-locations", new NoOpSerde<>());
-
-        InMemoryInputDescriptor imevents = isd.getInputDescriptor("events", new NoOpSerde<>());
-
-        InMemoryOutputDescriptor outputMatchStream = isd.getOutputDescriptor("match-stream", new NoOpSerde<>());
-
+    @Test
+    public void testDriverMatchTask() throws Exception {
         TestRunner
                 .of(new DriverMatchTaskApplication())
                 .addInputStream(imevents, TestUtils.genStreamData("events"))
@@ -62,6 +67,40 @@ public class TestDriverMatchTask {
 
         String rightBlockTest = "{\"clientId\":7,\"driverId\":3002}";
         Assert.assertEquals(resultIter.next(), mapper.readTree(rightBlockTest));
+    }
+
+    @Test
+    public void testMultipleDriversSameBlock() throws Exception {
+        TestRunner
+                .of(new DriverMatchTaskApplication())
+                .addInputStream(imevents, TestUtils.genStreamData("events"))
+                .addInputStream(imdriverLocation, TestUtils.genStreamData("driver-locations"))
+                .addOutputStream(outputMatchStream, 1)
+                .addConfig(confMap)
+                .addConfig("deploy.test", "true")
+                .run(Duration.ofSeconds(5));
+
+        ListIterator<Object> resultIter = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0).listIterator();
+        String multipleDriverTest = "{\"clientId\":3,\"driverId\":9002}";
+        Assert.assertEquals(resultIter.next(), mapper.readTree(multipleDriverTest));
+    }
+
+//    @Test
+    public void testNoDriverAvailable() throws Exception {
+        Map<String, String> confMap = new HashMap<>();
+        // Add necessary configurations...
+
+        TestRunner
+                .of(new DriverMatchTaskApplication())
+                .addInputStream(imevents, TestUtils.genStreamData("events_no_driver"))
+                .addInputStream(imdriverLocation, TestUtils.genStreamData("driver-locations_no_driver"))
+                .addOutputStream(outputMatchStream, 1)
+                .addConfig(confMap)
+                .addConfig("deploy.test", "true")
+                .run(Duration.ofSeconds(5));
+
+        List<Object> results = TestRunner.consumeStream(outputMatchStream, Duration.ofSeconds(10)).get(0);
+        Assert.assertTrue(results.isEmpty()); // No match should be made
     }
 
 
