@@ -125,7 +125,9 @@ driver-rider-match/
 
 #### 1. driver-match.properties
 
-Main configuration file located at `driver-match/src/main/config/driver-match.properties`:
+Main configuration file located at `driver-match/src/main/config/driver-match.properties`.
+
+**Example Configuration** (update with your actual cluster details):
 
 ```properties
 # Job Configuration
@@ -140,23 +142,28 @@ app.class=com.cloudcomputing.samza.nycabs.application.DriverMatchTaskApplication
 systems.kafka.samza.factory=org.apache.samza.system.kafka.KafkaSystemFactory
 systems.kafka.samza.msg.serde=json
 
-# Update with your cluster details:
-systems.kafka.consumer.zookeeper.connect=<master-node>:2181/
-systems.kafka.producer.bootstrap.servers=<broker1>:9092,<broker2>:9092,<broker3>:9092
+# Kafka Connection (replace with your cluster details)
+systems.kafka.consumer.zookeeper.connect=ip-1-2-3-4.ec2.internal:2181/
+systems.kafka.producer.bootstrap.servers=ip-1-2-3-4.ec2.internal:9092,ip-5-6-7-8.ec2.internal:9092,ip-9-1-2-3.ec2.internal:9092
 
-# YARN package path
-yarn.package.path=hdfs://<master-node>:8020/nycabs-0.0.1-dist.tar.gz
+# YARN package path (leave empty in template, runner.sh sets this automatically)
+# Format: hdfs://<master-internal-dns>:8020/${project.artifactId}-${pom.version}-dist.tar.gz
+yarn.package.path=
 
 # State Store Configuration
 stores.driver-loc.factory=org.apache.samza.storage.kv.RocksDbKeyValueStorageEngineFactory
 stores.driver-loc.changelog=kafka.driver-loc-changelog
 stores.driver-loc.key.serde=string
 stores.driver-loc.msg.serde=json
+stores.driver-loc.changelog.replication.factor=3
 ```
 
-**Important**: Before deployment, update the following placeholders:
-- `<master-node>`: Internal DNS of your master node (e.g., `ip-1-2-3-4.ec2.internal`)
-- `<broker1>`, `<broker2>`, `<broker3>`: Internal DNS of all Kafka broker nodes
+**Important**: Before deployment, you must update:
+- `systems.kafka.consumer.zookeeper.connect`: Replace `ip-1-2-3-4.ec2.internal` with your master node's internal DNS
+- `systems.kafka.producer.bootstrap.servers`: Replace with the comma-separated list of all Kafka broker internal DNS names (you can get this from running `start_kafka.sh`)
+- `yarn.package.path`: Update with your master node's internal DNS (or let `runner.sh` handle this)
+
+The actual configuration file in the repository shows placeholder values like `ip-1-2-3-4.ec2.internal` which must be replaced with your actual cluster node addresses.
 
 #### 2. DriverMatchConfig.java
 
@@ -316,13 +323,12 @@ The main logic resides in `DriverMatchTask.java`. Key areas to implement:
 For local development and testing:
 
 1. Set up local Kafka and Zookeeper
-2. Update `DriverMatchTaskApplication.java`:
+2. The `DriverMatchTaskApplication.java` file contains these constants that are already configured for local development:
    ```java
-   private static final List<String> KAFKA_CONSUMER_ZK_CONNECT = 
-       ImmutableList.of("localhost:2181");
-   private static final List<String> KAFKA_PRODUCER_BOOTSTRAP_SERVERS = 
-       ImmutableList.of("localhost:9092");
+   private static final List<String> KAFKA_CONSUMER_ZK_CONNECT = ImmutableList.of("localhost:2181");
+   private static final List<String> KAFKA_PRODUCER_BOOTSTRAP_SERVERS = ImmutableList.of("localhost:9092");
    ```
+   Note: For production deployment, these are overridden by the `driver-match.properties` file.
 
 3. Run tests: `mvn test`
 
