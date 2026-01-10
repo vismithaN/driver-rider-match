@@ -138,6 +138,10 @@ job.coordinator.system=kafka
 # TaskApplication class
 app.class=com.cloudcomputing.samza.nycabs.application.DriverMatchTaskApplication
 
+# Serializers
+serializers.registry.json.class=org.apache.samza.serializers.JsonSerdeFactory
+serializers.registry.string.class=org.apache.samza.serializers.StringSerdeFactory
+
 # Kafka System Configuration
 systems.kafka.samza.factory=org.apache.samza.system.kafka.KafkaSystemFactory
 systems.kafka.samza.msg.serde=json
